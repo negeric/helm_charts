@@ -1,0 +1,11 @@
+apiVersion: v2
+name: affine
+description: A Helm chart for deploying AFFiNE to Kubernetes
+type: application
+version: 0.3.0
+appVersion: "stable"
+keywords:
+  - Affine
+home: https://github.com/negeric/helm_charts/tree/main/Affine
+sources:
+  - https://github.com/negeric/helm_charts/
