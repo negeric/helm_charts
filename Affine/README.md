@@ -34,13 +34,13 @@ Omit `REDIS_SERVER_PASSWORD` if your Redis instance doesn't require authenticati
 ### 3. Install the chart
 
 ```bash
-helm install affine ./affine
+helm install affine -f
 ```
 
 Or with custom values:
 
 ```bash
-helm install affine ./affine -f my-values.yaml
+helm install affine -f my-values.yaml
 ```
 
 ## Configuration
