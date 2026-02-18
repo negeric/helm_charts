@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "affine.fullname" . }}-migration-{{ .Release.Revision }}
+  labels:
+    {{- include "affine.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "affine.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: migration
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "./scripts/self-host-predeploy.js"]
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.name }}
+                  key: {{ .Values.externalSecret.databaseUrlKey }}
+            - name: REDIS_SERVER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.name }}
+                  key: {{ .Values.externalSecret.redisHostKey }}
+            - name: REDIS_SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.name }}
+                  key: {{ .Values.externalSecret.redisPortKey }}
+            - name: REDIS_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalSecret.name }}
+                  key: {{ .Values.externalSecret.redisPasswordKey }}
+                  optional: true
+            {{- if .Values.affine.redisDatabase }}
+            - name: REDIS_SERVER_DATABASE
+              value: {{ .Values.affine.redisDatabase | quote }}
+            {{- end }}
