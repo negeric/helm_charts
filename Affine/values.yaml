@@ -1,0 +1,81 @@
+image:
+  repository: ghcr.io/toeverything/affine
+  tag: stable
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+#  - name: regcred
+
+# Name of a user-provided Secret containing DB and Redis connection details.
+# Required keys: DATABASE_URL, REDIS_SERVER_HOST, REDIS_SERVER_PORT
+# Optional keys: REDIS_SERVER_PASSWORD
+externalSecret:
+  name: affine-external-db
+  databaseUrlKey: DATABASE_URL
+  redisHostKey: REDIS_SERVER_HOST
+  redisPortKey: REDIS_SERVER_PORT
+  redisPasswordKey: REDIS_SERVER_PASSWORD
+
+affine:
+  # If empty, the chart generates a random private key
+  privateKey: ""
+  # Public-facing host, e.g. "affine.example.com"
+  serverHost: "affine.domain.com"
+  # Set to true if the public-facing URL uses HTTPS
+  serverHttps: true
+  # Redis database number (0-15)
+  redisDatabase: "1"
+
+# Mailer configuration for outbound email
+mailer: {}
+  # SMTP host (e.g. smtp.gmail.com)
+  #host: "smtp.gmail.net"
+  # SMTP port (commonly 25, 465, or 587)
+  #port: "587"
+  # SMTP username
+  #user: "smtp"
+  # Sender address (e.g. "AFFiNE <noreply@example.com>")
+  #sender: "affine@domain.com"
+  # Skip TLS certificate verification (for self-signed certs)
+  #ignoreTls: false
+  # Name of an existing Secret containing MAILER_PASSWORD
+  #passwordSecret:
+  #  name: "affine-smtp"
+  #  key: MAILER_PASSWORD
+
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: []
+  hosts:
+    - host: affine.domain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: affine-tls
+      hosts:
+        - affine.domain.com
+
+service:
+  type: ClusterIP
+  port: 3010
+
+resources: {}
+  # requests:
+  #   cpu: 250m
+  #   memory: 512Mi
+  # limits:
+  #   cpu: "1"
+  #   memory: 1Gi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
